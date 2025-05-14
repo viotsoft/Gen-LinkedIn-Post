@@ -5,17 +5,11 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 import csv
 from datetime import datetime
-from dotenv import load_dotenv
-from pathlib import Path
 
-# Load environment variables from .env file
-env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
-
-# Initialize OpenAI client
+# Get API key from environment (Render uses this)
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise ValueError("OPENAI_API_KEY environment variable is not set. Please create a .env file with your OpenAI API key.")
+    raise ValueError("OPENAI_API_KEY environment variable is not set.")
 client = OpenAI(api_key=api_key)
 
 app = FastAPI()
@@ -81,15 +75,13 @@ async def generate_post(data: GenerationRequest):
         )
         post_content = response.choices[0].message.content
 
-        # Log data to CSV
+        # Log to CSV (optional)
         try:
             with open("feedback.csv", "a", newline="", encoding='utf-8') as f:
                 writer = csv.writer(f)
-                writer.writerow([
-                    datetime.now(), data.platform, data.tone, data.type, data.audience, data.goal, data.topic, post_content
-                ])
+                writer.writerow([datetime.now(), data.platform, data.tone, data.type, data.audience, data.goal, data.topic, post_content])
         except Exception as e:
-            print(f"Error writing to CSV: {e}")
+            print(f"CSV logging error: {e}")
 
         return {"post": post_content}
     except Exception as e:
@@ -103,4 +95,4 @@ async def collect_feedback(data: FeedbackRequest):
             writer.writerow([datetime.now(), "FEEDBACK", "", "", "", "", "", data.post, data.feedback])
         return {"message": "Feedback recorded"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
