@@ -16,7 +16,8 @@ if st.button("Generate Post"):
     else:
         with st.spinner("Generating..."):
             try:
-                response = requests.post("http://localhost:8000/generate", json={
+                response = requests.post("https://ai-post-api.onrender.com/generate", json={
+
                     "platform": platform,
                     "tone": tone,
                     "type": type_,
